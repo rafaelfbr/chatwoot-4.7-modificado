@@ -5,6 +5,8 @@ class Whatsapp::IncomingMessageBaseService
   include ::Whatsapp::IncomingMessageServiceHelpers
 
   pattr_initialize [:inbox!, :params!]
+  
+  attr_accessor :referral_data
 
   def perform
     processed_params
@@ -59,6 +61,8 @@ class Whatsapp::IncomingMessageBaseService
   def create_messages
     message = @processed_params[:messages].first
     log_error(message) && return if error_webhook_event?(message)
+
+    @referral_data = message[:referral]
 
     process_in_reply_to(message)
 
