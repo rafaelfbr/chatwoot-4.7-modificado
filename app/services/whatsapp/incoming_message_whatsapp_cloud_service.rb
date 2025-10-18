@@ -28,7 +28,7 @@ class Whatsapp::IncomingMessageWhatsappCloudService < Whatsapp::IncomingMessageB
   end
 
   #
-  # Métodos copiados da classe 'pai' e MODIFICADOS com LOGS
+  # Métodos copiados da classe 'pai' e MODIFICADOS
   #
   def create_messages
     message = @processed_params[:messages].first
@@ -36,15 +36,12 @@ class Whatsapp::IncomingMessageWhatsappCloudService < Whatsapp::IncomingMessageB
 
     # AQUI CAPTURAMOS O REFERRAL
     @referral_data = message[:referral]
-    Rails.logger.info "[REFERRAL DEBUG] create_messages: Referral data capturado: #{@referral_data.inspect}"
 
     process_in_reply_to(message)
     message_type == 'contacts' ? create_contact_messages(message) : create_regular_message(message)
   end
 
   def create_regular_message(message)
-    Rails.logger.info "[REFERRAL DEBUG] create_regular_message: Iniciando. @referral_data é: #{@referral_data.inspect}"
-
     # Prepara os atributos com o referral
     content_attrs = {}
     if @referral_data.present?
@@ -52,7 +49,6 @@ class Whatsapp::IncomingMessageWhatsappCloudService < Whatsapp::IncomingMessageB
         referral: @referral_data
       }
     end
-    Rails.logger.info "[REFERRAL DEBUG] create_regular_message: content_attrs preparado: #{content_attrs.inspect}"
 
     # Constrói a mensagem JÁ COM OS ATRIBUTOS
     @message = @conversation.messages.build(
@@ -66,13 +62,9 @@ class Whatsapp::IncomingMessageWhatsappCloudService < Whatsapp::IncomingMessageB
       content_attributes: content_attrs
     )
 
-    Rails.logger.info "[REFERRAL DEBUG] create_regular_message: Mensagem construída com attributes: #{@message.content_attributes.inspect}"
-
     attach_files
     attach_location if message_type == 'location'
     @message.save!
-
-    Rails.logger.info "[REFERRAL DEBUG] create_regular_message: Mensagem salva com ID #{@message.id}. Attributes no banco: #{@message.reload.content_attributes.inspect}"
   end
 end
 
